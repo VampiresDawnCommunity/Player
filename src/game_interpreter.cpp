@@ -825,6 +825,10 @@ bool Game_Interpreter::ExecuteCommand(lcf::rpg::EventCommand const& com) {
 			return CommandManiacControlStrings(com);
 		case Cmd::Maniac_CallCommand:
 			return CommandManiacCallCommand(com);
+		case static_cast<Game_Interpreter::Cmd>(2050): //Cmd::EasyRpg_CallMovement
+			return CommandCallMovement(com);
+		case static_cast<Game_Interpreter::Cmd>(2051): //Cmd::EasyRpg_WaitForMovement
+			return CommandWaitForMovement(com);
 		default:
 			return true;
 	}
@@ -4983,6 +4987,87 @@ bool Game_Interpreter::CommandManiacCallCommand(lcf::rpg::EventCommand const&) {
 
 	Output::Warning("Maniac Patch: Command CallCommand not supported");
 	return true;
+}
+
+bool Game_Interpreter::CommandCallMovement(lcf::rpg::EventCommand const& com) {
+	// CommandSetMovement("moveCommand",[useVarID, ID, useVarOutput, output])
+
+	int eventID = ValueOrVariable(com.parameters[0], com.parameters[1]);
+	int outputParam = ValueOrVariable(com.parameters[2], com.parameters[3]);
+
+	Game_Character* event = GetCharacter(eventID);
+	Game_Character* target;
+
+	std::string moveCommand = ToString(com.string);
+	std::string outputString = event->GetSpriteName();
+
+	std::size_t pos = moveCommand.find('/');
+
+	if (pos != std::string::npos) {
+		outputString = moveCommand.substr(pos + 1);
+		moveCommand = moveCommand.substr(0, pos);
+	}
+
+	if (moveCommand == "SetMoveSpeed")event->SetMoveSpeed(outputParam);
+	if (moveCommand == "SetMoveFrequency")event->SetMoveFrequency(outputParam);
+	if (moveCommand == "SetTransparency")event->SetTransparency(outputParam);
+
+	if (moveCommand == "Event2Event") {
+		target = GetCharacter(outputParam);
+		event->SetFacing(target->GetFacing());
+		event->SetDirection(target->GetDirection());
+		event->SetX(target->GetX());
+		event->SetY(target->GetY());
+	}
+
+	if (moveCommand == "SetFacingLocked")event->SetFacingLocked(outputParam);
+	if (moveCommand == "SetLayer")event->SetLayer(outputParam);
+	if (moveCommand == "SetFlying")event->SetFlying(outputParam); //FIXME: I wish any event could imitate an airship, lacks more work.
+	if (moveCommand == "ChangeCharset")event->SetSpriteGraphic(outputString,outputParam); // syntax ChangeCharset/actor1
+	
+	if (moveCommand == "StopMovement")event->CancelMoveRoute();
+
+	return true;
+}
+
+bool Game_Interpreter::CommandWaitForMovement(lcf::rpg::EventCommand const& com) {
+	// CommandWaitForMovement(useVarID, ID)
+
+	// Needed for ShowChoice
+	auto* frame = GetFramePtr();
+	const auto& list = frame->commands;
+	auto& index = frame->current_command;
+
+	// Retrieve event ID
+	int eventID = ValueOrVariable(com.parameters[0], com.parameters[1]);
+	if (eventID == 0)
+		eventID = GetCurrentEventId();
+
+	// Get the character associated with the event ID
+	Game_Character* ev = GetCharacter(eventID);
+
+	// Check if movement exists and if it's currently running
+	bool movementExists = !ev->GetMoveRoute().move_commands.empty();
+	bool movementIsRunning = movementExists && (ev->IsMoveRouteOverwritten() && !ev->IsMoveRouteFinished());
+
+	int i = frame->current_command + 1;
+
+	// Check the next command for a specific condition
+	const auto& cmd = list[i];
+	const int32_t failBranch = static_cast<int>(Cmd::ShowChoiceOption);
+
+	// If the next command is "Fails to move x times" and the character is stuck, cancel movement
+	if (cmd.code == failBranch && cmd.string == "Fails to move x times")
+		if (ev->isStuck(cmd.parameters[0])) {
+			ev->failsMove = 0;
+			ev->CancelMoveRoute();
+			frame->current_command = i + 1;
+			return true;
+		}
+
+	// Return false if movement is still in progress
+	if(!movementIsRunning) ev->failsMove = 0;
+	return !movementIsRunning;
 }
 
 Game_Interpreter& Game_Interpreter::GetForegroundInterpreter() {
