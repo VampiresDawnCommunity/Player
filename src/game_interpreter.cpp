@@ -5020,6 +5020,19 @@ bool Game_Interpreter::CommandCallMovement(lcf::rpg::EventCommand const& com) {
 		event->SetY(target->GetY());
 	}
 
+	if (moveCommand == "FaceTowards"){
+		if(!event->IsMoving()) {
+			event->TurnTowardCharacter(outputParam);
+			event->UpdateFacing();
+		}
+}
+	if (moveCommand == "FaceAway"){
+		if (!event->IsMoving()) {
+			event->TurnAwayFromCharacter(outputParam);
+			event->UpdateFacing();
+		}
+	}
+
 	if (moveCommand == "SetFacingLocked")event->SetFacingLocked(outputParam);
 	if (moveCommand == "SetLayer")event->SetLayer(outputParam);
 	if (moveCommand == "SetFlying")event->SetFlying(outputParam); //FIXME: I wish any event could imitate an airship, lacks more work.
