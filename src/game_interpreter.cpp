@@ -5044,17 +5044,13 @@ bool Game_Interpreter::CommandCallMovement(lcf::rpg::EventCommand const& com) {
 }
 
 bool Game_Interpreter::CommandWaitForMovement(lcf::rpg::EventCommand const& com) {
-	// CommandWaitForMovement(useVarID, ID)
+	// CommandWaitForMovement(useVarID, ID, useVarTargetVariable, targetVariable, useVarFailuresAmount, failuresAmount)
 
-	// Needed for ShowChoice
-	auto* frame = GetFramePtr();
-	const auto& list = frame->commands;
-	auto& index = frame->current_command;
-
-	// Retrieve event ID
 	int eventID = ValueOrVariable(com.parameters[0], com.parameters[1]);
-	if (eventID == 0)
-		eventID = GetCurrentEventId();
+	if (eventID == 0) eventID = GetCurrentEventId();
+
+	int outputVariable = ValueOrVariable(com.parameters[2], com.parameters[3]);
+	int failuresAmount = ValueOrVariable(com.parameters[4], com.parameters[5]);
 
 	// Get the character associated with the event ID
 	Game_Character* ev = GetCharacter(eventID);
@@ -5063,24 +5059,24 @@ bool Game_Interpreter::CommandWaitForMovement(lcf::rpg::EventCommand const& com)
 	bool movementExists = !ev->GetMoveRoute().move_commands.empty();
 	bool movementIsRunning = movementExists && (ev->IsMoveRouteOverwritten() && !ev->IsMoveRouteFinished());
 
-	int i = frame->current_command + 1;
-
-	// Check the next command for a specific condition
-	const auto& cmd = list[i];
-	const int32_t failBranch = static_cast<int>(Cmd::ShowChoiceOption);
-
-	// If the next command is "Fails to move x times" and the character is stuck, cancel movement
-	if (cmd.code == failBranch && cmd.string == "Fails to move x times")
-		if (ev->isStuck(cmd.parameters[0])) {
+	// failed to move X times (0 = wait till finish)
+	if (failuresAmount > 0)
+		if (ev->isStuck(failuresAmount)) {
 			ev->failsMove = 0;
 			ev->CancelMoveRoute();
-			frame->current_command = i + 1;
+			Main_Data::game_variables->Set(outputVariable, 0);
+			Game_Map::SetNeedRefresh(true);
 			return true;
 		}
 
 	// Return false if movement is still in progress
-	if(!movementIsRunning) ev->failsMove = 0;
-	return !movementIsRunning;
+	if (!movementIsRunning) {
+		ev->failsMove = 0;
+		Main_Data::game_variables->Set(outputVariable, 1);
+		Game_Map::SetNeedRefresh(true);
+		return true;
+	}
+	return false;
 }
 
 Game_Interpreter& Game_Interpreter::GetForegroundInterpreter() {
