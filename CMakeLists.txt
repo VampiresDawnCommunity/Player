@@ -474,6 +474,7 @@ endif()
 
 # Version setup
 set(PLAYER_VERSION ${PROJECT_VERSION})
+string(APPEND PLAYER_VERSION "-VDC")
 if(NOT PROJECT_VERSION_TWEAK)
 	# a kludge to match the valid version format
 	set(PROJECT_VERSION_TWEAK 0)
