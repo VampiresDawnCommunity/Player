@@ -500,16 +500,16 @@ bool Game_Player::GetOnVehicle() {
 	auto* vehicle = Game_Map::GetVehicle(Game_Vehicle::Airship);
 
 	if (vehicle->IsInPosition(GetX(), GetY()) && IsStopping() && vehicle->IsStopping()) {
-		data()->vehicle = Game_Vehicle::Airship;
-		data()->aboard = true;
+		//data()->vehicle = Game_Vehicle::Airship;
+		//data()->aboard = true;
 
-		// Note: RPG_RT ignores the lock_facing flag here!
-		SetFacing(Left);
+		//// Note: RPG_RT ignores the lock_facing flag here!
+		//SetFacing(Left);
 
-		data()->preboard_move_speed = GetMoveSpeed();
-		SetMoveSpeed(vehicle->GetMoveSpeed());
-		vehicle->StartAscent();
-		Main_Data::game_player->SetFlying(vehicle->IsFlying());
+		//data()->preboard_move_speed = GetMoveSpeed();
+		//SetMoveSpeed(vehicle->GetMoveSpeed());
+		//vehicle->StartAscent();
+		//Main_Data::game_player->SetFlying(vehicle->IsFlying());
 	} else {
 		const auto front_x = Game_Map::XwithDirection(GetX(), GetDirection());
 		const auto front_y = Game_Map::YwithDirection(GetY(), GetDirection());
