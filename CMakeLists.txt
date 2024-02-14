@@ -320,6 +320,8 @@ add_library(${PROJECT_NAME} OBJECT
 	src/scene_teleport.h
 	src/scene_title.cpp
 	src/scene_title.h
+	src/scene_translation.cpp
+	src/scene_translation.h
 	src/screen.cpp
 	src/screen.h
 	src/shake.h
