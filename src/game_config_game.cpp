@@ -89,6 +89,7 @@ void Game_ConfigGame::LoadFromArgs(CmdlineParser& cp) {
 			patch_rpg2k3_commands.Lock(false);
 			patch_direct_menu.Lock(false);
 			patch_anti_lag_switch.Lock(false);
+			patch_encounter_random_alert.Lock(false);
 			patch_override = true;
 			continue;
 		}
@@ -116,6 +117,11 @@ void Game_ConfigGame::LoadFromArgs(CmdlineParser& cp) {
 					int num = static_cast<int>(std::strtol(v.substr(16).c_str(), nullptr, 0));
 					if (num > 0) {
 						patch_anti_lag_switch.Set(num);
+					}
+				} else if (v.rfind("encounter-alert=") == 0) {
+					int num = static_cast<int>(std::strtol(v.substr(16).c_str(), nullptr, 0));
+					if (num > 0) {
+						patch_encounter_random_alert.Set(num);
 					}
 				}
 			}
@@ -169,6 +175,10 @@ void Game_ConfigGame::LoadFromStream(Filesystem_Stream::InputStream& is) {
 	}
 
 	if (patch_anti_lag_switch.FromIni(ini)) {
+		patch_override = true;
+	}
+
+	if (patch_encounter_random_alert.FromIni(ini)) {
 		patch_override = true;
 	}
 }
