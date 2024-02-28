@@ -87,6 +87,7 @@ void Game_ConfigGame::LoadFromArgs(CmdlineParser& cp) {
 			patch_common_this_event.Lock(false);
 			patch_key_patch.Lock(false);
 			patch_rpg2k3_commands.Lock(false);
+			patch_direct_menu.Lock(false);
 			patch_override = true;
 			continue;
 		}
@@ -105,6 +106,8 @@ void Game_ConfigGame::LoadFromArgs(CmdlineParser& cp) {
 					patch_key_patch.Set(true);
 				} else if (v == "rpg2k3-cmds" || v == "rpg2k3-commands") {
 					patch_rpg2k3_commands.Set(true);
+				} else if (v == "direct-menu") {
+					patch_direct_menu.Set(true);
 				}
 			}
 			patch_override = true;
@@ -149,6 +152,10 @@ void Game_ConfigGame::LoadFromStream(Filesystem_Stream::InputStream& is) {
 	}
 
 	if (patch_rpg2k3_commands.FromIni(ini)) {
+		patch_override = true;
+	}
+
+	if (patch_direct_menu.FromIni(ini)) {
 		patch_override = true;
 	}
 }
