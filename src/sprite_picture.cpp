@@ -168,13 +168,13 @@ int Sprite_Picture::GetFrameWidth() const {
 	const auto& pic = Main_Data::game_pictures->GetPicture(pic_id);
 	const auto& data = pic.data;
 
-	auto& bitmap = GetBitmap();
-	assert(bitmap);
-
 	if (feature_spritesheet && pic.NumSpriteSheetFrames() > 1) {
+		auto& bitmap = GetBitmap();
+		assert(bitmap);
+
 		return bitmap->GetWidth() / data.spritesheet_cols;
 	} else {
-		return bitmap->GetWidth();
+		return GetWidth();
 	}
 }
 
@@ -182,12 +182,12 @@ int Sprite_Picture::GetFrameHeight() const {
 	const auto& pic = Main_Data::game_pictures->GetPicture(pic_id);
 	const auto& data = pic.data;
 
-	auto& bitmap = GetBitmap();
-	assert(bitmap);
-
 	if (feature_spritesheet && pic.NumSpriteSheetFrames() > 1) {
+		auto& bitmap = GetBitmap();
+		assert(bitmap);
+
 		return bitmap->GetHeight() / data.spritesheet_rows;
 	} else {
-		return bitmap->GetHeight();
+		return GetHeight();
 	}
 }
