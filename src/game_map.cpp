@@ -1512,6 +1512,12 @@ void Game_Map::SetPositionY(int y, bool reset_panorama) {
 }
 
 bool Game_Map::GetNeedRefresh() {
+	if (Player::game_config.patch_anti_lag_switch.Get() && Main_Data::game_switches->Get(Player::game_config.patch_anti_lag_switch.Get())) {
+		return false;
+	}
+	if (need_refresh)
+	Output::Warning("HUGO");
+
 	return need_refresh;
 }
 
