@@ -106,8 +106,11 @@ void Game_ConfigGame::LoadFromArgs(CmdlineParser& cp) {
 					patch_key_patch.Set(true);
 				} else if (v == "rpg2k3-cmds" || v == "rpg2k3-commands") {
 					patch_rpg2k3_commands.Set(true);
-				} else if (v == "direct-menu") {
-					patch_direct_menu.Set(true);
+				} else if (v.rfind("direct-menu=") == 0) {
+					int num = static_cast<int>(std::strtol(v.substr(12).c_str(), nullptr, 0));
+					if (num > 0) {
+						patch_direct_menu.Set(num);
+					}
 				}
 			}
 			patch_override = true;

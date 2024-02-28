@@ -1403,7 +1403,8 @@ Engine options:
                        pic-unlock  - Pictures are not blocked by messages
                        rpg2k3-cmds - Support all RPG Maker 2003 event commands
                                      in any version of the engine
-                       direct-menu - Directly access subscreens of default menu
+                       direct-menu=[var-id]
+								   - Directly access subscreens of default menu
  --no-patch           Disable all engine patches.
  --project-path PATH  Instead of using the working directory, the game in PATH
                       is used.
