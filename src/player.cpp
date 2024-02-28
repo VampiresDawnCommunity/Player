@@ -825,8 +825,8 @@ void Player::CreateGameObjects() {
 		}
 	}
 
-	Output::Debug("Patch configuration: dynrpg={} maniac={} key-patch={} common-this={} pic-unlock={} 2k3-commands={} direct-menu={}",
-		Player::IsPatchDynRpg(), Player::IsPatchManiac(), Player::IsPatchKeyPatch(), game_config.patch_common_this_event.Get(), game_config.patch_unlock_pics.Get(), game_config.patch_rpg2k3_commands.Get(), game_config.patch_direct_menu.Get());
+	Output::Debug("Patch configuration: dynrpg={} maniac={} key-patch={} common-this={} pic-unlock={} 2k3-commands={} direct-menu={} anti-lag-switch={}",
+		Player::IsPatchDynRpg(), Player::IsPatchManiac(), Player::IsPatchKeyPatch(), game_config.patch_common_this_event.Get(), game_config.patch_unlock_pics.Get(), game_config.patch_rpg2k3_commands.Get(), game_config.patch_direct_menu.Get(), game_config.patch_anti_lag_switch.Get());
 
 	ResetGameObjects();
 
@@ -1405,6 +1405,8 @@ Engine options:
                                      in any version of the engine
                        direct-menu=[var-id]
 								   - Directly access subscreens of default menu
+                       anti-lag-switch=[switch-id]
+                                   - Disable event page refreshes via switch
  --no-patch           Disable all engine patches.
  --project-path PATH  Instead of using the working directory, the game in PATH
                       is used.
