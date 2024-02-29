@@ -294,6 +294,8 @@ add_library(${PROJECT_NAME} OBJECT
 	src/scene_import.h
 	src/scene_item.cpp
 	src/scene_item.h
+	src/scene_item_ex.cpp
+	src/scene_item_ex.h
 	src/scene_load.cpp
 	src/scene_load.h
 	src/scene_logo.cpp

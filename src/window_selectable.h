@@ -46,6 +46,7 @@ public:
 	int GetPageRowMax() const;
 	int GetPageItemMax();
 
+	int GetItemMax();
 	/** Change the max item */
 	void SetItemMax(int value);
 
@@ -118,6 +119,10 @@ protected:
 
 	int wrap_limit = 2;
 };
+
+inline int Window_Selectable::GetItemMax() {
+	return item_max;
+}
 
 inline void Window_Selectable::SetItemMax(int value) {
 	item_max = value;

@@ -29,6 +29,7 @@
 #include "scene_end.h"
 #include "scene_equip.h"
 #include "scene_item.h"
+#include "scene_item_ex.h"
 #include "scene_skill.h"
 #include "scene_order.h"
 #include "scene_save.h"
@@ -203,7 +204,12 @@ void Scene_Menu::UpdateCommand() {
 				Main_Data::game_system->SePlay(Main_Data::game_system->GetSystemSE(Main_Data::game_system->SFX_Buzzer));
 			} else {
 				Main_Data::game_system->SePlay(Main_Data::game_system->GetSystemSE(Main_Data::game_system->SFX_Decision));
-				Scene::Push(std::make_shared<Scene_Item>());
+				if (Main_Data::game_party->IsItemCategoriesInUse()) {
+					Scene::Push(std::make_shared<Scene_Item_Ex>());
+				}
+				else {
+					Scene::Push(std::make_shared<Scene_Item>());
+				}
 			}
 			break;
 		case Skill:

@@ -60,50 +60,10 @@ void Scene_Item::vUpdate() {
 	} else if (Input::IsTriggered(Input::DECISION)) {
 		int item_id = item_window->GetItem() == NULL ? 0 : item_window->GetItem()->ID;
 
+		// The party only has valid items
 		if (item_id > 0 && item_window->CheckEnable(item_id)) {
-			// The party only has valid items
-			const lcf::rpg::Item& item = *item_window->GetItem();
-
-			if (item.type == lcf::rpg::Item::Type_switch) {
-				Main_Data::game_system->SePlay(Main_Data::game_system->GetSystemSE(Main_Data::game_system->SFX_Decision));
-				Main_Data::game_party->ConsumeItemUse(item_id);
-				Main_Data::game_switches->Set(item.switch_id, true);
-				Scene::PopUntil(Scene::Map);
-				Game_Map::SetNeedRefresh(true);
-			} else if (item.type == lcf::rpg::Item::Type_special && item.skill_id > 0) {
-				const lcf::rpg::Skill* skill = lcf::ReaderUtil::GetElement(lcf::Data::skills, item.skill_id);
-				if (!skill) {
-					Output::Warning("Scene Item: Item references invalid skill ID {}", item.skill_id);
-					return;
-				}
-
-				if (skill->type == lcf::rpg::Skill::Type_teleport) {
-					Main_Data::game_system->SePlay(Main_Data::game_system->GetSystemSE(Main_Data::game_system->SFX_Decision));
-					Scene::Push(std::make_shared<Scene_Teleport>(item, *skill));
-				} else if (skill->type == lcf::rpg::Skill::Type_escape) {
-					Main_Data::game_party->ConsumeItemUse(item_id);
-					Main_Data::game_system->SePlay(skill->sound_effect);
-
-					Main_Data::game_player->ForceGetOffVehicle();
-					Main_Data::game_player->ReserveTeleport(Main_Data::game_targets->GetEscapeTarget());
-
-					Scene::PopUntil(Scene::Map);
-				} else if (skill->type == lcf::rpg::Skill::Type_switch) {
-					Main_Data::game_party->ConsumeItemUse(item_id);
-					Main_Data::game_system->SePlay(skill->sound_effect);
-					Main_Data::game_switches->Set(skill->switch_id, true);
-					Scene::PopUntil(Scene::Map);
-					Game_Map::SetNeedRefresh(true);
-				} else {
-					Main_Data::game_system->SePlay(Main_Data::game_system->GetSystemSE(Main_Data::game_system->SFX_Decision));
-					Scene::Push(std::make_shared<Scene_ActorTarget>(item_id));
-					item_index = item_window->GetIndex();
-				}
-			} else {
-				Main_Data::game_system->SePlay(Main_Data::game_system->GetSystemSE(Main_Data::game_system->SFX_Decision));
-				Scene::Push(std::make_shared<Scene_ActorTarget>(item_id));
-				item_index = item_window->GetIndex();
-			}
+			item_window->UseItem();
+			item_index = item_window->GetIndex();
 		} else {
 			Main_Data::game_system->SePlay(Main_Data::game_system->GetSystemSE(Main_Data::game_system->SFX_Buzzer));
 		}

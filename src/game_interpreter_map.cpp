@@ -41,6 +41,7 @@
 #include "scene_battle.h"
 #include "scene_equip.h"
 #include "scene_item.h"
+#include "scene_item_ex.h"
 #include "scene_menu.h"
 #include "scene_order.h"
 #include "scene_save.h"
@@ -101,7 +102,12 @@ bool Game_Interpreter_Map::RequestMainMenuScene(int subscreen_id, int actor_inde
 	switch (subscreen_id)
 	{
 	case 1: // Inventory
-		Scene::instance->SetRequestedScene(std::make_shared<Scene_Item>());
+		if (Main_Data::game_party->IsItemCategoriesInUse()) {
+			Scene::instance->SetRequestedScene(std::make_shared<Scene_Item_Ex>());
+		}
+		else {
+			Scene::instance->SetRequestedScene(std::make_shared<Scene_Item>());
+		}
 		return true;
 	case 2: // Skills
 	case 3: // Equipment

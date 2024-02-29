@@ -138,6 +138,22 @@ void Game_Party::GetItems(std::vector<int>& item_list) {
 		item_list.push_back(*it);
 }
 
+void Game_Party::GetOrderedItems(std::vector<int>& item_list) {
+
+	auto compare = [&](int a, int b) {
+		lcf::rpg::Item* item_a = lcf::ReaderUtil::GetElement(lcf::Data::items, a);
+		lcf::rpg::Item* item_b = lcf::ReaderUtil::GetElement(lcf::Data::items, b);
+
+		if (item_a->easyrpg_order == item_b->easyrpg_order)
+			return item_a->ID < item_b->ID;
+
+		return item_a->easyrpg_order < item_b->easyrpg_order;
+	};
+
+	GetItems(item_list);
+	std::sort(item_list.begin(), item_list.end(), compare);
+}
+
 int Game_Party::GetItemCount(int item_id) const {
 	auto ip = GetItemIndex(item_id);
 	return ip.second ? data.item_counts[ip.first] : 0;
@@ -165,6 +181,32 @@ int Game_Party::GetMaxItemCount(int item_id) const {
 	} else {
 		return item->easyrpg_max_count;
 	}
+}
+
+bool Game_Party::IsItemCategoriesInUse() const {
+	for (int i = 0; i < lcf::Data::items.size(); i++) {
+		if (lcf::Data::items[i].easyrpg_category > 0)
+			return true;
+	}
+	return false;
+}
+
+void Game_Party::GetMinMaxItemCategories(int &min, int &max) {
+	min = 0;
+	max = 0;
+	for (int i = 0; i < lcf::Data::items.size(); i++) {
+		min = std::min(min, lcf::Data::items[i].easyrpg_category);
+		max = std::max(max, lcf::Data::items[i].easyrpg_category);
+	}
+}
+
+bool Game_Party::HasUnsortedItemInInventory() const {
+	for (int i = 0; i < data.item_ids.size(); i++) {
+		lcf::rpg::Item* item = lcf::ReaderUtil::GetElement(lcf::Data::items, data.item_ids[i]);
+		if (item->easyrpg_category == 0)
+			return true;
+	}
+	return false;
 }
 
 void Game_Party::GainGold(int n) {
