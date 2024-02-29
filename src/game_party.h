@@ -109,6 +109,8 @@ public:
 	 */
 	void GetItems(std::vector<int>& item_list);
 
+	void GetOrderedItems(std::vector<int>& item_list);
+
 	/**
 	 * Gets number of item in inventory.
 	 *
@@ -140,6 +142,12 @@ public:
 	 * @return maximum number of items.
 	 */
 	int GetMaxItemCount(int item_id) const;
+
+	bool IsItemCategoriesInUse() const;
+
+	void GetMinMaxItemCategories(int& min, int& max);
+
+	bool HasUnsortedItemInInventory() const;
 
 	/**
 	 * Gains an amount of items.

@@ -78,10 +78,16 @@ public:
 	 */
 	void SetActor(Game_Actor* actor);
 
+	void UseItem();
+
+	int GetCategoryIndex();
+	void SetCategoryIndex(int category_index);
+
 private:
 	std::vector<int> data;
 
 	Game_Actor* actor = nullptr;
-};
 
+	int category_index = -1;
+};
 #endif

@@ -24,7 +24,14 @@
 #include "font.h"
 #include <lcf/reader_util.h>
 #include "game_battle.h"
+#include "game_map.h"
+#include "game_switches.h"
+#include "game_system.h"
+#include "game_targets.h"
+#include "main_data.h"
 #include "output.h"
+#include "scene_actortarget.h"
+#include "scene_teleport.h"
 
 Window_Item::Window_Item(int ix, int iy, int iwidth, int iheight) :
 	Window_Selectable(ix, iy, iwidth, iheight) {
@@ -32,7 +39,7 @@ Window_Item::Window_Item(int ix, int iy, int iwidth, int iheight) :
 }
 
 const lcf::rpg::Item* Window_Item::GetItem() const {
-	if (index < 0) {
+	if (index < 0 || index >= data.size() ) {
 		return nullptr;
 	}
 
@@ -43,6 +50,11 @@ bool Window_Item::CheckInclude(int item_id) {
 	if (data.size() == 0 && item_id == 0) {
 		return true;
 	} else {
+		if (this->category_index >= 0) {
+			auto* item = lcf::ReaderUtil::GetElement(lcf::Data::items, item_id);
+			return item && item->easyrpg_category == this->category_index;
+		}
+
 		return (item_id > 0);
 	}
 }
@@ -63,7 +75,7 @@ void Window_Item::Refresh() {
 	std::vector<int> party_items;
 
 	data.clear();
-	Main_Data::game_party->GetItems(party_items);
+	Main_Data::game_party->GetOrderedItems(party_items);
 
 	for (size_t i = 0; i < party_items.size(); ++i) {
 		if (this->CheckInclude(party_items[i])) {
@@ -134,4 +146,61 @@ void Window_Item::UpdateHelp() {
 
 void Window_Item::SetActor(Game_Actor * actor) {
 	this->actor = actor;
+}
+
+void Window_Item::UseItem() {
+
+	const lcf::rpg::Item& item = *GetItem();
+
+	if (item.type == lcf::rpg::Item::Type_switch) {
+		Main_Data::game_system->SePlay(Main_Data::game_system->GetSystemSE(Main_Data::game_system->SFX_Decision));
+		Main_Data::game_party->ConsumeItemUse(item.ID);
+		Main_Data::game_switches->Set(item.switch_id, true);
+		Scene::PopUntil(Scene::Map);
+		Game_Map::SetNeedRefresh(true);
+	}
+	else if (item.type == lcf::rpg::Item::Type_special && item.skill_id > 0) {
+		const lcf::rpg::Skill* skill = lcf::ReaderUtil::GetElement(lcf::Data::skills, item.skill_id);
+		if (!skill) {
+			Output::Warning("Scene Item: Item references invalid skill ID {}", item.skill_id);
+			return;
+		}
+
+		if (skill->type == lcf::rpg::Skill::Type_teleport) {
+			Main_Data::game_system->SePlay(Main_Data::game_system->GetSystemSE(Main_Data::game_system->SFX_Decision));
+			Scene::Push(std::make_shared<Scene_Teleport>(item, *skill));
+		}
+		else if (skill->type == lcf::rpg::Skill::Type_escape) {
+			Main_Data::game_party->ConsumeItemUse(item.ID);
+			Main_Data::game_system->SePlay(skill->sound_effect);
+
+			Main_Data::game_player->ForceGetOffVehicle();
+			Main_Data::game_player->ReserveTeleport(Main_Data::game_targets->GetEscapeTarget());
+
+			Scene::PopUntil(Scene::Map);
+		}
+		else if (skill->type == lcf::rpg::Skill::Type_switch) {
+			Main_Data::game_party->ConsumeItemUse(item.ID);
+			Main_Data::game_system->SePlay(skill->sound_effect);
+			Main_Data::game_switches->Set(skill->switch_id, true);
+			Scene::PopUntil(Scene::Map);
+			Game_Map::SetNeedRefresh(true);
+		}
+		else {
+			Main_Data::game_system->SePlay(Main_Data::game_system->GetSystemSE(Main_Data::game_system->SFX_Decision));
+			Scene::Push(std::make_shared<Scene_ActorTarget>(item.ID));
+		}
+	}
+	else {
+		Main_Data::game_system->SePlay(Main_Data::game_system->GetSystemSE(Main_Data::game_system->SFX_Decision));
+		Scene::Push(std::make_shared<Scene_ActorTarget>(item.ID));
+	}
+}
+
+int Window_Item::GetCategoryIndex() {
+	return this->category_index;
+}
+
+void Window_Item::SetCategoryIndex(int category_index) {
+	this->category_index = category_index;
 }
