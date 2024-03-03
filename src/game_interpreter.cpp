@@ -51,7 +51,6 @@
 #include "scene_map.h"
 #include "scene_save.h"
 #include "scene_settings.h"
-#include "scene_translation.h"
 #include "scene.h"
 #include "game_clock.h"
 #include "input.h"
@@ -4053,7 +4052,7 @@ bool Game_Interpreter::CommandToggleFullscreen(lcf::rpg::EventCommand const& /* 
 	return true;
 }
 
-bool Game_Interpreter::CommandOpenVideoOptions(lcf::rpg::EventCommand const& com) {
+bool Game_Interpreter::CommandOpenVideoOptions(lcf::rpg::EventCommand const& /* com */) {
 	int scene_id;
 
 	if (!Player::IsRPG2k3ECommands()) {
@@ -4070,16 +4069,6 @@ bool Game_Interpreter::CommandOpenVideoOptions(lcf::rpg::EventCommand const& com
 	// Don't interrupt other pending game scenes for the settings menu.
 	if (Scene::instance->HasRequestedScene()) {
 		return false;
-	}
-
-	if (com.parameters.size() > 0) {
-		scene_id = com.parameters[0];
-
-		if (scene_id == 1) {
-			Scene::instance->SetRequestedScene(std::make_shared<Scene_Translation>());
-			++index;
-			return false;
-		}
 	}
 
 	// FIXME: RPG_RT pops up an immediate modal dialog, while this
