@@ -194,6 +194,13 @@ public:
 	void SelectLanguage(StringView lang_id);
 
 	/**
+	 * Looks up the latest savegame from the Save folder and returns the defined language.
+	 *
+	 * @return the folder code of the saved language
+	 */
+	std::string Translation::GetLatestSavegameLanguage();
+
+	/**
 	 * Does a async fetch of a map po file.
 	 * Only used by the web player.
 	 *

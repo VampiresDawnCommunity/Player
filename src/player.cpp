@@ -1138,6 +1138,11 @@ void Player::LoadSavegame(const std::string& save_name, int save_id) {
 			verstr.str(), Version::STRING);
 	}
 
+	if (!save->easyrpg_data.language.empty() && save->easyrpg_data.language != lcf::DBString("default")) {
+		Output::Debug("Savegame language: '{}' ", ToString(save->easyrpg_data.language));
+		Player::translation.SelectLanguage(ToString(save->easyrpg_data.language));
+	}
+
 	// Compatibility hacks for old EasyRPG Player saves.
 	if (save->easyrpg_data.version == 0) {
 		// Old savegames accidentally wrote animation_type as continuous for all events.

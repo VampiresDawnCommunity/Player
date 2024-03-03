@@ -31,6 +31,7 @@
 #include "output.h"
 #include "generated/logo.h"
 #include "generated/logo2.h"
+#include "lcf/rpg/saveeasyrpgwindow.h"
 #include "utils.h"
 #include "rand.h"
 #include "text.h"
@@ -102,6 +103,12 @@ void Scene_Logo::vUpdate() {
 
 			if (!Player::startup_language.empty()) {
 				Player::translation.SelectLanguage(Player::startup_language);
+			}
+			else if (Player::translation.HasTranslations()) {
+				std::string lang = Player::translation.GetLatestSavegameLanguage();
+				if (lang != "default") {
+					Player::translation.SelectLanguage(lang);
+				}
 			}
 			Scene::Push(std::make_shared<Scene_Title>(), true);
 			if (Player::load_game_id > 0) {

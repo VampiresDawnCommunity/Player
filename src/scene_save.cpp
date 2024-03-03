@@ -134,6 +134,12 @@ bool Scene_Save::Save(std::ostream& os, int slot_id, bool prepare_save) {
 		Main_Data::game_system->IncSaveCount();
 	}
 
+	if (!Tr::HasActiveTranslation()) {
+		save.easyrpg_data.language = lcf::DBString(lcf::rpg::SaveEasyRpgData::kDefaultLanguage);
+	}
+	else {
+		save.easyrpg_data.language = lcf::DBString(Player::translation.GetCurrentLanguage().lang_dir);
+	}
 	save.targets = Main_Data::game_targets->GetSaveData();
 	save.system = Main_Data::game_system->GetSaveData();
 	save.system.switches = Main_Data::game_switches->GetData();

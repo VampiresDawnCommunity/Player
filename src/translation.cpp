@@ -25,6 +25,7 @@
 #include <lcf/rpg/terms.h>
 #include <lcf/rpg/map.h>
 #include "lcf/rpg/mapinfo.h"
+#include <lcf/lsd/reader.h>
 
 #include "cache.h"
 #include "font.h"
@@ -153,6 +154,39 @@ bool Translation::HasTranslations() const
 const std::vector<Language>& Translation::GetLanguages() const
 {
 	return languages;
+}
+
+std::string Translation::GetLatestSavegameLanguage() {
+
+	// Refresh File Finder Save Folder
+	FilesystemView fs = FileFinder::Save();
+	double latest_time = 0;
+	std::string latest_lang = std::string(lcf::rpg::SaveEasyRpgData::kDefaultLanguage);
+
+	for (int i = 0; i < Utils::Clamp<int32_t>(lcf::Data::system.easyrpg_max_savefiles, 3, 99); i++) {
+		std::stringstream ss;
+		ss << "Save" << (i <= 8 ? "0" : "") << (i + 1) << ".lsd";
+
+		std::string file = fs.FindFile(ss.str());
+
+		if (!file.empty()) {
+			// File found
+			auto save_stream = FileFinder::Save().OpenInputStream(file);
+			if (!save_stream) {
+				//corrupted
+				continue;
+			}
+
+			std::unique_ptr<lcf::rpg::Save> savegame = lcf::LSD_Reader::Load(save_stream, Player::encoding);
+
+			if (savegame && savegame->title.timestamp > latest_time) {
+				latest_time = savegame->title.timestamp;
+				latest_lang = ToString(savegame->easyrpg_data.language);
+			}
+		}
+	}
+
+	return latest_lang;
 }
 
 

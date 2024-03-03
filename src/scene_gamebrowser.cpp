@@ -229,5 +229,11 @@ void Scene_GameBrowser::BootGame() {
 	if (!Player::startup_language.empty()) {
 		Player::translation.SelectLanguage(Player::startup_language);
 	}
+	else if (Player::translation.HasTranslations()) {
+		std::string lang = Player::translation.GetLatestSavegameLanguage();
+		if (lang != "default") {
+			Player::translation.SelectLanguage(lang);
+		}
+	}
 	Scene::Push(std::make_shared<Scene_Title>());
 }
