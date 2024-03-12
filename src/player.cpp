@@ -1052,6 +1052,7 @@ void Player::LoadFonts() {
 #ifdef HAVE_FREETYPE
 	// Look for bundled fonts
 	auto gothic = FileFinder::OpenFont("Font");
+	player_config.font1.SetLocked(false);
 	if (gothic) {
 		auto ft = Font::CreateFtFont(std::move(gothic), 12, false, false);
 		player_config.font1.SetLocked(ft != nullptr);
@@ -1061,6 +1062,7 @@ void Player::LoadFonts() {
 	}
 
 	auto mincho = FileFinder::OpenFont("Font2");
+	player_config.font2.SetLocked(false);
 	if (mincho) {
 		auto ft = Font::CreateFtFont(std::move(mincho), 12, false, false);
 		player_config.font2.SetLocked(ft != nullptr);
