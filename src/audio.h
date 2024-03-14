@@ -133,6 +133,18 @@ struct AudioInterface {
 	int SE_GetGlobalVolume() const;
 	void SE_SetGlobalVolume(int volume);
 
+	bool GetFluidsynthEnabled() const;
+	void SetFluidsynthEnabled(bool enable);
+
+	bool GetWildMidiEnabled() const;
+	void SetWildMidiEnabled(bool enable);
+
+	bool GetNativeMidiEnabled() const;
+	void SetNativeMidiEnabled(bool enable);
+
+	std::string GetFluidsynthSoundfont() const;
+	void SetFluidsynthSoundfont(StringView sf);
+
 protected:
 	Game_ConfigAudio cfg;
 };

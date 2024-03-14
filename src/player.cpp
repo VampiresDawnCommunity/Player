@@ -83,13 +83,10 @@
 #include "baseui.h"
 #include "game_clock.h"
 #include "message_overlay.h"
+#include "audio_midi.h"
 
 #ifdef __ANDROID__
 #include "platform/android/android.h"
-#endif
-
-#if defined(HAVE_FLUIDSYNTH) || defined(HAVE_FLUIDLITE)
-#include "decoder_fluidsynth.h"
 #endif
 
 #ifndef EMSCRIPTEN
@@ -639,14 +636,6 @@ Game_Config Player::ParseCommandLine() {
 			}
 			continue;
 		}
-#if defined(HAVE_FLUIDSYNTH) || defined(HAVE_FLUIDLITE)
-		if (cp.ParseNext(arg, 1, "--soundfont")) {
-			if (arg.NumValues() > 0) {
-				FluidSynthDecoder::SetSoundfont(arg.Value(0));
-			}
-			continue;
-		}
-#endif
 		if (cp.ParseNext(arg, 0, "--version", 'v')) {
 			std::cout << GetFullVersionString() << std::endl;
 			exit(0);
@@ -675,6 +664,9 @@ void Player::CreateGameObjects() {
 	// Parse game specific settings
 	CmdlineParser cp(arguments);
 	game_config = Game_ConfigGame::Create(cp);
+
+	// Reinit MIDI
+	MidiDecoder::Reset();
 
 	// Load the meta information file.
 	// Note: This should eventually be split across multiple folders as described in Issue #1210
@@ -1060,13 +1052,23 @@ void Player::LoadFonts() {
 #ifdef HAVE_FREETYPE
 	// Look for bundled fonts
 	auto gothic = FileFinder::OpenFont("Font");
+	player_config.font1.SetLocked(false);
 	if (gothic) {
-		Font::SetDefault(Font::CreateFtFont(std::move(gothic), 12, false, false), false);
+		auto ft = Font::CreateFtFont(std::move(gothic), 12, false, false);
+		player_config.font1.SetLocked(ft != nullptr);
+		if (ft) {
+			Font::SetDefault(ft, false);
+		}
 	}
 
 	auto mincho = FileFinder::OpenFont("Font2");
+	player_config.font2.SetLocked(false);
 	if (mincho) {
-		Font::SetDefault(Font::CreateFtFont(std::move(mincho), 12, false, false), true);
+		auto ft = Font::CreateFtFont(std::move(mincho), 12, false, false);
+		player_config.font2.SetLocked(ft != nullptr);
+		if (ft) {
+			Font::SetDefault(ft, true);
+		}
 	}
 #endif
 }
@@ -1392,6 +1394,13 @@ Engine options:
                        rpg2k3     - RPG Maker 2003 (v1.00 - v1.04)
                        rpg2k3v105 - RPG Maker 2003 (v1.05 - v1.09a)
                        rpg2k3e    - RPG Maker 2003 (English release, v1.12)
+ --font1 FILE         Font to use for the first font. The system graphic of the
+                      game determines whether font 1 or 2 is used.
+ --font1-size PX      Size of font 1 in pixel. The default is 12.
+ --font2 FILE         Font to use for the second font.
+ --font2-size PX      Size of font 2 in pixel. The default is 12.
+ --font-path PATH     The path in which the settings scene looks for fonts.
+                      The default is config-path/Font.
  --language LANG      Load the game translation in language/LANG folder.
  --load-game-id N     Skip the title scene and load SaveN.lsd (N is padded to
                       two digits).
@@ -1442,6 +1451,8 @@ Video options:
                        original   - 320x240 (4:3). Recommended
                        widescreen - 416x240 (16:9)
                        ultrawide  - 560x240 (21:9)
+ --pause-focus-lost   Pause the game when the window has no focus.
+                      Disable with --no-pause-focus-lost.
  --scaling S          How the video output is scaled.
                       Options:
                        nearest  - Scale to screen size. Fast, but causes scaling
@@ -1463,6 +1474,8 @@ Audio options:
  --music-volume V     Set volume of background music to V (0-100).
  --sound-volume V     Set volume of sound effects to V (0-100).
  --soundfont FILE     Soundfont in sf2 format to use when playing MIDI files.
+ --soundfont-path P   The path in which the settings scene looks for soundfonts.
+                      The default is config-path/Soundfont.
 
 Debug options:
  --battle-test N...   Start a battle test.

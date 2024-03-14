@@ -191,8 +191,14 @@ public:
 	/** Toggle whether we should show fps */
 	void ToggleShowFps();
 
-	/** Toggle wheter we should show fps on the titlebar */
+	/** Toggle whether we should show fps on the titlebar */
 	void ToggleShowFpsOnTitle();
+
+	/**
+	 * Set whether the program pauses the execution when the program focus is lost.
+	 * @param value
+	 */
+	void SetPauseWhenFocusLost(bool value);
 
 	/**
 	 * @return the minimum amount of time each physical frame should take.
@@ -219,6 +225,15 @@ public:
 	 * @param resolution new resolution
 	 */
 	void SetGameResolution(GameResolution resolution);
+
+	/**
+	 * Opens the specified URL through the operating system.
+	 * Opens a file browser when file:// is provided.
+	 *
+	 * @param url URL to open
+	 * @return true when successful
+	 */
+	virtual bool OpenURL(StringView path) { (void)path; return false; }
 
 	/** Toggles "stretch to screen width" on or off */
 	virtual void ToggleStretch() {};
@@ -375,6 +390,10 @@ inline void BaseUi::ToggleShowFps() {
 
 inline void BaseUi::ToggleShowFpsOnTitle() {
 	vcfg.fps_render_window.Toggle();
+}
+
+inline void BaseUi::SetPauseWhenFocusLost(bool value) {
+	vcfg.pause_when_focus_lost.Set(value);
 }
 
 inline Game_Clock::duration BaseUi::GetFrameLimit() const {

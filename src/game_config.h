@@ -57,6 +57,12 @@ enum class StartupLogos {
 	All
 };
 
+#ifdef HAVE_FLUIDLITE
+#define EP_FLUID_NAME "FluidLite"
+#else
+#define EP_FLUID_NAME "FluidSynth"
+#endif
+
 struct Game_ConfigPlayer {
 	StringConfigParam autobattle_algo{ "", "", "", "", "" };
 	StringConfigParam enemyai_algo{ "", "", "", "", "" };
@@ -68,6 +74,10 @@ struct Game_ConfigPlayer {
 		Utils::MakeSvArray("None", "Custom", "All"),
 		Utils::MakeSvArray("none", "custom", "all"),
 		Utils::MakeSvArray("Do not show any additional logos", "Show custom logos bundled with the game", "Show all logos, including the original from RPG Maker")};
+	PathConfigParam font1 { "Font 1", "The game chooses whether it wants font 1 or 2", "Player", "Font1", "" };
+	RangeConfigParam<int> font1_size { "Font 1 Size", "", "Player", "Font1Size", 12, 6, 16};
+	PathConfigParam font2 { "Font 2", "The game chooses whether it wants font 1 or 2", "Player", "Font2", "" };
+	RangeConfigParam<int> font2_size { "Font 2 Size", "", "Player", "Font2Size", 12, 6, 16};
 
 	void Hide();
 };
@@ -85,6 +95,7 @@ struct Game_ConfigVideo {
 		Utils::MakeSvArray("nearest", "integer", "bilinear"),
 		Utils::MakeSvArray("Scale to screen size (Causes scaling artifacts)", "Scale to multiple of the game resolution", "Like Nearest, but output is blurred to avoid artifacts")};
 	BoolConfigParam stretch{ "Stretch", "Stretch to the width of the window/screen", "Video", "Stretch", false };
+	BoolConfigParam pause_when_focus_lost{ "Pause when focus lost", "Pause the program when it is in the background", "Video", "PauseWhenFocusLost", true };
 	BoolConfigParam touch_ui{ "Touch Ui", "Display the touch ui", "Video", "TouchUi", true };
 	EnumConfigParam<GameResolution, 3> game_resolution{ "Resolution", "Game resolution. Changes require a restart.", "Video", "GameResolution", GameResolution::Original,
 		Utils::MakeSvArray("Original (Recommended)", "Widescreen (Experimental)", "Ultrawide (Experimental)"),
@@ -103,6 +114,11 @@ struct Game_ConfigVideo {
 struct Game_ConfigAudio {
 	RangeConfigParam<int> music_volume{ "BGM Volume", "Volume of the background music", "Audio", "MusicVolume", 100, 0, 100 };
 	RangeConfigParam<int> sound_volume{ "SFX Volume", "Volume of the sound effects", "Audio", "SoundVolume", 100, 0, 100 };
+	BoolConfigParam fluidsynth_midi { EP_FLUID_NAME " (SF2)", "Play MIDI using SF2 soundfonts", "Audio", "Fluidsynth", true };
+	BoolConfigParam wildmidi_midi { "WildMidi (GUS)", "Play MIDI using GUS patches", "Audio", "WildMidi", true };
+	BoolConfigParam native_midi { "Native MIDI", "Play MIDI through the operating system ", "Audio", "NativeMidi", true };
+	LockedConfigParam<std::string> fmmidi_midi { "FmMidi", "Play MIDI using the built-in MIDI synthesizer", "[Always ON]" };
+	PathConfigParam soundfont { "Soundfont", "Soundfont to use for " EP_FLUID_NAME, "Audio", "Soundfont", "" };
 
 	void Hide();
 };
@@ -144,6 +160,19 @@ struct Game_Config {
 	 * Returns the a filesystem view to the global config directory
 	 */
 	static FilesystemView GetGlobalConfigFilesystem();
+
+	/**
+	 * Returns the filesystem view to the soundfont directory
+	 * By default this is config/Soundfont
+	 */
+	static FilesystemView GetSoundfontFilesystem();
+
+	/**
+	 * Returns the filesystem view to the font directory
+	 * By default this is config/Font
+	 */
+	static FilesystemView GetFontFilesystem();
+
 
 	/**
 	 * Returns a handle to the global config file for reading.
