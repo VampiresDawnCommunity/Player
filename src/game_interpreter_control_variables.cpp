@@ -20,6 +20,7 @@
 #include "game_enemyparty.h"
 #include "game_ineluki.h"
 #include "game_interpreter.h"
+#include "game_message.h"
 #include "game_party.h"
 #include "game_player.h"
 #include "game_system.h"
@@ -289,6 +290,10 @@ int ControlVariables::Other(int op) {
 		case 13:
 			// Patch version
 			return 1337;
+			break;
+		case 14:
+			// Is Message window active?
+			return Game_Message::IsMessageActive();
 			break;
 	}
 
