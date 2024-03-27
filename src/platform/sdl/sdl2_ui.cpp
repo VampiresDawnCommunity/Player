@@ -519,7 +519,7 @@ void Sdl2Ui::ProcessEvents() {
 	}
 }
 
-void Sdl2Ui::SetScalingMode(ScalingMode mode) {
+void Sdl2Ui::SetScalingMode(ConfigEnum::ScalingMode mode) {
 	window.size_changed = true;
 	vcfg.scaling_mode.Set(mode);
 }
@@ -566,7 +566,7 @@ void Sdl2Ui::UpdateDisplay() {
 			}
 		};
 
-		if (vcfg.scaling_mode.Get() == ScalingMode::Integer) {
+		if (vcfg.scaling_mode.Get() == ConfigEnum::ScalingMode::Integer) {
 			// Integer division on purpose
 			if (want_aspect > real_aspect) {
 				window.scale = static_cast<float>(window.width / main_surface->width());
@@ -611,7 +611,7 @@ void Sdl2Ui::UpdateDisplay() {
 			SDL_RenderSetViewport(sdl_renderer, &viewport);
 		}
 
-		if (vcfg.scaling_mode.Get() == ScalingMode::Bilinear && window.scale > 0.f) {
+		if (vcfg.scaling_mode.Get() == ConfigEnum::ScalingMode::Bilinear && window.scale > 0.f) {
 			if (sdl_texture_scaled) {
 				SDL_DestroyTexture(sdl_texture_scaled);
 			}
@@ -626,7 +626,7 @@ void Sdl2Ui::UpdateDisplay() {
 	}
 
 	SDL_RenderClear(sdl_renderer);
-	if (vcfg.scaling_mode.Get() == ScalingMode::Bilinear && window.scale > 0.f) {
+	if (vcfg.scaling_mode.Get() == ConfigEnum::ScalingMode::Bilinear && window.scale > 0.f) {
 		// Render game texture on the scaled texture
 		SDL_SetRenderTarget(sdl_renderer, sdl_texture_scaled);
 		SDL_RenderClear(sdl_renderer);
