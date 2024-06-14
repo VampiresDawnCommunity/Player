@@ -49,9 +49,16 @@ void Scene_Item_Ex::Start() {
 	category_window.reset(new Window_Help(Player::menu_offset_x, Player::menu_offset_y + MENU_HEIGHT - menu_categories_height, MENU_WIDTH, menu_categories_height));
 
 	Main_Data::game_party->GetMinMaxItemCategories(this->category_min, this->category_max);
-	if (category_min == 0 && !Main_Data::game_party->HasUnsortedItemInInventory())
+	if (category_min == 0 && !Main_Data::game_party->HasItemCategoryInInventory(0))
 		category_min = 1;
-	category_index = std::min(category_index, category_min);
+	int first_category_index_with_items = category_min;
+	for (int i = category_min; i < category_max; i++) {
+		if (Main_Data::game_party->HasItemCategoryInInventory(i)) {
+			first_category_index_with_items = i;
+			break;
+		}
+	}
+	category_index = std::max(category_index, first_category_index_with_items);
 
 	for (int i = 0; i <= category_max; i++) {
 		item_windows.push_back(new Window_Item(

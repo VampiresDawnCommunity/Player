@@ -147,7 +147,7 @@ public:
 
 	void GetMinMaxItemCategories(int& min, int& max);
 
-	bool HasUnsortedItemInInventory() const;
+	bool HasItemCategoryInInventory(int category) const;
 
 	/**
 	 * Gains an amount of items.

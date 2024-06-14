@@ -27,6 +27,7 @@
 #include "game_player.h"
 #include "game_battle.h"
 #include "game_targets.h"
+#include "game_switches.h"
 #include "game_system.h"
 #include "scene_battle.h"
 #include <lcf/reader_util.h>
@@ -184,6 +185,8 @@ int Game_Party::GetMaxItemCount(int item_id) const {
 }
 
 bool Game_Party::IsItemCategoriesInUse() const {
+	if (!Main_Data::game_switches->Get(2364))
+		return false;
 	for (int i = 0; i < lcf::Data::items.size(); i++) {
 		if (lcf::Data::items[i].easyrpg_category > 0)
 			return true;
@@ -200,10 +203,10 @@ void Game_Party::GetMinMaxItemCategories(int &min, int &max) {
 	}
 }
 
-bool Game_Party::HasUnsortedItemInInventory() const {
+bool Game_Party::HasItemCategoryInInventory(int category) const {
 	for (int i = 0; i < data.item_ids.size(); i++) {
 		lcf::rpg::Item* item = lcf::ReaderUtil::GetElement(lcf::Data::items, data.item_ids[i]);
-		if (item->easyrpg_category == 0)
+		if (item->easyrpg_category == category)
 			return true;
 	}
 	return false;
