@@ -160,7 +160,7 @@ void Game_Vehicle::UpdateNextMovementAction() {
 }
 
 void Game_Vehicle::UpdateAnimation() {
-	if (!IsJumping()) { // && (GetVehicleType() != Airship || IsFlying())) {
+	if (!IsJumping() && (lcf::Data::system.vdce_vehicle_followers_hack || (GetVehicleType() != Airship || IsFlying()))) {
 		// RPG_RT Animates vehicles slower when moving
 		const auto limit = GetStopCount() ? 16 : 12;
 
