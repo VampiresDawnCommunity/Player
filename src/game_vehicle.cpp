@@ -20,6 +20,7 @@
 #include <lcf/data.h>
 #include "main_data.h"
 #include "game_system.h"
+#include "game_switches.h"
 #include "game_map.h"
 #include "game_player.h"
 #include "game_vehicle.h"
@@ -161,6 +162,21 @@ void Game_Vehicle::UpdateNextMovementAction() {
 
 void Game_Vehicle::UpdateAnimation() {
 	if (!IsJumping() && (lcf::Data::system.vdce_vehicle_followers_hack || (GetVehicleType() != Airship || IsFlying()))) {
+
+		if (Main_Data::game_switches->Get(2365)) {
+
+			const auto speed = Utils::Clamp(GetMoveSpeed(), 1, 6);
+			const auto continuous_limit = GetContinuousAnimFrames(speed);
+
+			if (GetStopCount() == 0) {
+				IncAnimCount();
+			}
+
+			if (GetAnimCount() >= continuous_limit) {
+				IncAnimFrame();
+			}
+			return;
+		}
 		// RPG_RT Animates vehicles slower when moving
 		const auto limit = GetStopCount() ? 16 : 12;
 
