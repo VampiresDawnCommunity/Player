@@ -287,10 +287,7 @@ int ControlVariables::Other(int op) {
 			break;
 		case 13:
 			// Patch version
-			if (Player::IsPatchManiac()) {
-				// Latest version before the engine rewrite
-				return 200128;
-			}
+			return 1'260'120'801;
 			break;
 	}
 
