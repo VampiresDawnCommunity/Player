@@ -548,6 +548,7 @@ void Game_Interpreter::Push(Game_Event* ev, const lcf::rpg::EventPage* page, boo
 
 void Game_Interpreter::Push(Game_CommonEvent* ev) {
 	Push(ev->GetList(), 0, false);
+	_state.stack[_state.stack.size() - 1].maniac_event_id = ev->GetId();
 }
 
 bool Game_Interpreter::CheckGameOver() {
@@ -2023,6 +2024,12 @@ bool Game_Interpreter::CommandPlaySound(lcf::rpg::EventCommand const& com) { // 
 	sound.volume = ValueOrVariableBitfield(com, 3, 1, 0);
 	sound.tempo = ValueOrVariableBitfield(com, 3, 2, 1);
 	sound.balance = ValueOrVariableBitfield(com, 3, 3, 2);
+
+	if (Main_Data::game_switches->Get(2225)) { // DEV switch
+		if (StartsWith(Utils::LowerCase(sound.name), "ce_quack")) {
+			Output::Warning("Quaaa!");
+		}
+	}
 
 	Main_Data::game_system->SePlay(sound, true);
 	return true;
@@ -3945,6 +3952,20 @@ bool Game_Interpreter::CommandCallEvent(lcf::rpg::EventCommand const& com) { // 
 		if (!common_event) {
 			Output::Warning("CallEvent: Can't call invalid common event {}", evt_id);
 			return true;
+		}
+
+		if (Main_Data::game_switches->Get(2225)) { //DEV switch
+			if (evt_id == 325 || evt_id == 326) {
+				std::stringstream ss;
+				for (int i = 0; i < _state.stack.size(); ++i) {
+					auto& frame = _state.stack[i];
+					ss << fmt::format("{}{{{}:{}}}", i, frame.maniac_event_id, frame.maniac_event_page_id);
+					if (i < _state.stack.size() - 1) {
+						ss << ">";
+					}
+				}
+				Output::Debug("AntiLag ({}) {}: {}", Main_Data::game_variables->Get(810), evt_id == 325 ? "ON" : "OFF", ss.str());
+			}
 		}
 
 		Push(common_event);

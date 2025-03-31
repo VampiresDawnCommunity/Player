@@ -44,7 +44,7 @@ namespace Debug {
 		inline int CountEventInterpreters() const { return ev_ids.size(); }
 		inline int CountCommonEventInterpreters() const { return ce_ids.size(); }
 
-		inline int Count() { return ev_ids.size() + ce_ids.size(); }
+		inline int Count() const { return ev_ids.size() + ce_ids.size(); }
 
 		inline std::tuple<const int&, const lcf::rpg::SaveEventExecState&> GetEventInterpreter(int i) const {
 			return std::tie(ev_ids[i], state_ev[i]);
