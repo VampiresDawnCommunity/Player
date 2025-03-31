@@ -19,21 +19,27 @@
 #define EP_GAME_VARIABLES_H
 
 // Headers
+#include "game_scoped_storage.h"
+#include "output.h"
+#include <lcf/reader_util.h>
 #include <lcf/data.h>
-#include "compiler.h"
+#include <lcf/rpg/database.h>
+#include "utils.h"
+#include "rand.h"
+#include <cmath>
 #include "string_view.h"
 #include <cstdint>
 #include <string>
 
 /**
- * Game_Variables class.
+ * Game_Variables class
  */
-class Game_Variables {
+class Game_Variables : public Game_VariablesBase {
 public:
-	using Var_t = int32_t;
 	using Variables_t = std::vector<Var_t>;
 
 	static constexpr int max_warnings = 10;
+
 	static constexpr Var_t min_2k = -999999;
 	static constexpr Var_t max_2k = 999999;
 	static constexpr Var_t min_2k3 = -9999999;
@@ -41,17 +47,11 @@ public:
 
 	Game_Variables(Var_t minval, Var_t maxval);
 
-	void SetData(Variables_t);
-	const Variables_t& GetData() const;
+	std::string_view GetName(int id) const override;
 
-	void SetLowerLimit(size_t limit);
-
-	Var_t Get(int variable_id) const;
+	std::vector<Var_t> GetRange(int variable_id, int length); //TODO!
 	Var_t GetIndirect(int variable_id) const;
-	Var_t GetWithMode(int id, int mode) const;
-	std::vector<Var_t> GetRange(int variable_id, int length);
 
-	Var_t Set(int variable_id, Var_t value);
 	Var_t Add(int variable_id, Var_t value);
 	Var_t Sub(int variable_id, Var_t value);
 	Var_t Mult(int variable_id, Var_t value);
@@ -63,7 +63,6 @@ public:
 	Var_t BitShiftLeft(int variable_id, Var_t value);
 	Var_t BitShiftRight(int variable_id, Var_t value);
 
-	void SetRange(int first_id, int last_id, Var_t value);
 	void AddRange(int first_id, int last_id, Var_t value);
 	void SubRange(int first_id, int last_id, Var_t value);
 	void MultRange(int first_id, int last_id, Var_t value);
@@ -128,78 +127,27 @@ public:
 	void BitShiftRightArray(int first_id_a, int last_id_a, int first_id_b);
 	void SwapArray(int first_id_a, int last_id_a, int first_id_b);
 
-	std::string_view GetName(int _id) const;
-
-	int GetSize() const;
-	int GetSizeWithLimit() const;
-
-	bool IsValid(int variable_id) const;
-
-	void SetWarning(int w);
-
-	Var_t GetMaxValue() const;
-	Var_t GetMinValue() const;
-
 	int GetMaxDigits() const;
-private:
-	bool ShouldWarn(int first_id, int last_id) const;
-	void WarnGet(int variable_id) const;
-	template <typename F>
-		Var_t SetOp(int variable_id, Var_t value, F&& op, const char* warn);
-	template <typename... Args>
-		void PrepareRange(const int first_id, const int last_id, const char* warn, Args... args);
-	template <typename... Args>
-		void PrepareArray(const int first_id_a, const int last_id_a, const int first_id_b, const char* warn, Args... args);
-	template <typename V, typename F>
-		void WriteRange(const int first_id, const int last_id, V&& value, F&& op);
-	template <typename F>
-		void WriteRangeVariable(const int first_id, const int last_id, int var_id, F&& op);
-	template <typename F>
-		void WriteArray(const int first_id_a, const int last_id_a, const int first_id_b, F&& op);
 
-	Variables_t _variables;
-	Var_t _min = 0;
-	Var_t _max = 0;
-	size_t lower_limit = 0;
-	mutable int _warnings = max_warnings;
+protected:
+	void AssignOpImpl(Var_t& target, Var_t value) const;
+
+	void ValidateRangeOp(int first_id, int last_id, Var_t value, const char* op) const;
+	void ValidateRangeVarOp(int first_id, int last_id, int var_id, const char* op) const;
+	void ValidateRangeVarIndirectOp(int first_id, int last_id, int var_id, const char* op) const;
+	void ValidateRangeRandomOp(int first_id, int last_id, Var_t minval, Var_t maxval, const char* op) const;
+
+	template<typename F>
+	void WriteRangeVariable(int first_id, const int last_id, const int var_id, F&& op);
+
+	template <typename... Args>
+	void PrepareArray(const int first_id_a, const int last_id_a, const int first_id_b, const char* warn, Args... args);
+	template <typename F>
+	void WriteArray(const int first_id_a, const int last_id_a, const int first_id_b, F&& op);
 };
 
-inline void Game_Variables::SetData(Variables_t v) {
-	_variables = std::move(v);
-}
-
-inline const Game_Variables::Variables_t& Game_Variables::GetData() const {
-	return _variables;
-}
-
-inline void Game_Variables::SetLowerLimit(size_t limit) {
-	lower_limit = limit;
-}
-
-inline int Game_Variables::GetSize() const {
-	return static_cast<int>(_variables.size());
-}
-
-inline int Game_Variables::GetSizeWithLimit() const {
-	return std::max<int>(lower_limit, _variables.size());
-}
-
-inline bool Game_Variables::IsValid(int variable_id) const {
-	return variable_id > 0 && variable_id <= GetSizeWithLimit();
-}
-
-inline bool Game_Variables::ShouldWarn(int first_id, int last_id) const {
-	return (first_id <= 0 || last_id > GetSizeWithLimit()) && _warnings > 0;
-}
-
-inline Game_Variables::Var_t Game_Variables::Get(int variable_id) const {
-	if (EP_UNLIKELY(ShouldWarn(variable_id, variable_id))) {
-		WarnGet(variable_id);
-	}
-	if (variable_id <= 0 || variable_id > static_cast<int>(_variables.size())) {
-		return 0;
-	}
-	return _variables[variable_id - 1];
+inline void Game_VariablesBase::AssignOpImpl(Var_t& target, Var_t value) const {
+	target = Utils::Clamp(value, GetMinValue(), GetMaxValue());
 }
 
 inline Game_Variables::Var_t Game_Variables::GetIndirect(int variable_id) const {
@@ -207,16 +155,32 @@ inline Game_Variables::Var_t Game_Variables::GetIndirect(int variable_id) const 
 	return Get(static_cast<int>(val_indirect));
 }
 
-inline void Game_Variables::SetWarning(int w) {
-	_warnings = w;
+inline void Game_Variables::ValidateRangeOp(int first_id, int last_id, Var_t value, const char* op) const {
+	if (EP_UNLIKELY(ShouldWarn(first_id, last_id))) {
+		Output::Debug("Invalid write {} {} {}!", this->FormatLValue(first_id, last_id), op, this->FormatRValue(value));
+		--_warnings;
+	}
 }
 
-inline Game_Variables::Var_t Game_Variables::GetMaxValue() const {
-	return _max;
+inline void Game_Variables::ValidateRangeVarOp(int first_id, int last_id, int var_id, const char* op) const {
+	if (EP_UNLIKELY(ShouldWarn(first_id, last_id))) {
+		Output::Debug("Invalid write {} {} {}!", this->FormatLValue(first_id, last_id), op, this->FormatRValue(var_id, "var"));
+		--_warnings;
+	}
 }
 
-inline Game_Variables::Var_t Game_Variables::GetMinValue() const {
-	return _min;
+inline void Game_Variables::ValidateRangeVarIndirectOp(int first_id, int last_id, int var_id, const char* op) const {
+	if (EP_UNLIKELY(ShouldWarn(first_id, last_id))) {
+		Output::Debug("Invalid write {} {} var[var[{}]]!", this->FormatLValue(first_id, last_id), op, var_id);
+		--_warnings;
+	}
+}
+
+inline void Game_Variables::ValidateRangeRandomOp(int first_id, int last_id, Var_t minval, Var_t maxval, const char* op) const {
+	if (EP_UNLIKELY(ShouldWarn(first_id, last_id))) {
+		Output::Debug("Invalid write {} {} rand({},{})!", this->FormatLValue(first_id, last_id), op, minval, maxval);
+		--_warnings;
+	}
 }
 
 #endif

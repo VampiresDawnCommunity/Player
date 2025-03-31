@@ -15,45 +15,7 @@
  * along with EasyRPG Player. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EP_GAME_SWITCHES_H
-#define EP_GAME_SWITCHES_H
-
 // Headers
-#include <vector>
-#include <string>
-#include <string_view.h>
 #include "game_scoped_storage.h"
-#include <lcf/rpg/database.h>
-#include "compiler.h"
 #include "output.h"
-
-/**
- * Game_Switches class
- */
-class Game_Switches : public Game_SwitchesBase {
-public:
-	using Switches_t = std::vector<game_bool>;
-
-	Game_Switches();
-
-	game_bool Flip(int id);
-	void FlipRange(int first_id, int last_id);
-
-	std::string_view GetName(int id) const override;
-
-	int GetInt(int switch_id) const;
-
-protected:
-	void AssignOpImpl(game_bool& target, game_bool value) const;
-};
-
-inline void Game_SwitchesBase::AssignOpImpl(game_bool& target, game_bool value) const {
-	target = value;
-}
-
-inline int Game_Switches::GetInt(int switch_id) const {
-	return Get(switch_id) ? 1 : 0;
-}
-
-#endif
-
+#include <lcf/data.h>

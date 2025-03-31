@@ -36,6 +36,85 @@ namespace Data {
 	std::vector<rpg::StringVariable>& maniac_string_variables = data.maniac_string_variables;
 
 	rpg::TreeMap treemap;
+
+#ifdef SCOPEDVARS_LIBLCF_STUB
+
+	std::vector<rpg::Switch> CreateFrameSwitches() {
+		std::vector<rpg::Switch> tmp;
+		tmp.push_back({ 1, DBString("FrameSw 1") });
+		tmp.push_back({ 2, DBString("FrameSw 2") });
+		tmp.push_back({ 3, DBString("FrameSw 3") });
+		tmp.push_back({ 4, DBString("FrameSw 4") });
+		tmp.push_back({ 5, DBString("FrameSw 5") });
+		return tmp;
+	}
+	std::vector<rpg::Variable> CreateFrameVars() {
+		std::vector<rpg::Variable> tmp;
+		tmp.push_back({ 1, DBString("FrameVar 1") });
+		tmp.push_back({ 2, DBString("FrameVar 2") });
+		tmp.push_back({ 3, DBString("FrameVar 3") });
+		tmp.push_back({ 4, DBString("FrameVar 4") });
+		tmp.push_back({ 5, DBString("FrameVar 5") });
+		return tmp;
+	}
+	std::vector<rpg::ScopedSwitch> CreateMapSwitches() {
+		std::vector<rpg::ScopedSwitch> tmp;
+		tmp.push_back({ 1, DBString("A"), false, false, false, false, false, false });
+		tmp.push_back({ 2, DBString("B"), false, false, false, false, false, false });
+		tmp.push_back({ 3, DBString("C"), false, false, false, false, false, true });
+		tmp.push_back({ 4, DBString("D"), false, false, false, false, true, false });
+		tmp.push_back({ 5, DBString("E"), false, false, false, false, true, true });
+		return tmp;
+	}
+	std::vector<rpg::ScopedVariable> CreateMapVars() {
+		std::vector<rpg::ScopedVariable> tmp;
+		tmp.push_back({ 1, DBString("A"), 4, true, false, false, false, false });
+		tmp.push_back({ 2, DBString("B"), 0, false, false, false, false, false });
+		tmp.push_back({ 3, DBString("C"), 0, false, false, false, false, false });
+		tmp.push_back({ 4, DBString("D"), 0, false, false, false, false, false });
+		tmp.push_back({ 5, DBString("E"), 0, false, false, false, false, false });
+		return tmp;
+	}
+	std::vector<rpg::ScopedSwitch> CreateSelfSwitches() {
+		std::vector<rpg::ScopedSwitch> tmp;
+		tmp.push_back({ 1, DBString("A"), false, false, false, false, false, false });
+		tmp.push_back({ 2, DBString("B"), false, false, false, false, false, false });
+		tmp.push_back({ 3, DBString("C"), false, false, true, false, false, false });
+		tmp.push_back({ 4, DBString("D"), false, false, false, false, true, false });
+		tmp.push_back({ 5, DBString("E"), false, false, false, false, false, false });
+		return tmp;
+	}
+	std::vector<rpg::ScopedVariable> CreateSelfVars() {
+		std::vector<rpg::ScopedVariable> tmp;
+		tmp.push_back({ 1, DBString("A"), 0, false, false, false, false, false });
+		tmp.push_back({ 2, DBString("B"), 0, false, false, false, false, false });
+		tmp.push_back({ 3, DBString("C"), 0, false, false, false, false, false });
+		tmp.push_back({ 4, DBString("D"), 0, false, false, false, false, false });
+		tmp.push_back({ 5, DBString("E"), 0, false, false, false, false, false });
+		return tmp;
+	}
+
+	std::vector<rpg::Switch> data_easyrpg_frame_switches = CreateFrameSwitches();
+	std::vector<rpg::Variable> data_easyrpg_frame_variables = CreateFrameVars();
+	std::vector<rpg::ScopedSwitch> data_easyrpg_map_switches = CreateMapSwitches();
+	std::vector<rpg::ScopedVariable> data_easyrpg_map_variables = CreateMapVars();
+	std::vector<rpg::ScopedSwitch> data_easyrpg_self_switches = CreateSelfSwitches();
+	std::vector<rpg::ScopedVariable> data_easyrpg_self_variables = CreateSelfVars();
+
+	std::vector<rpg::Switch>& easyrpg_frame_switches = data_easyrpg_frame_switches;
+	std::vector<rpg::Variable>& easyrpg_frame_variables = data_easyrpg_frame_variables;
+	std::vector<rpg::ScopedSwitch>& easyrpg_map_switches = data_easyrpg_map_switches;
+	std::vector<rpg::ScopedVariable>& easyrpg_map_variables = data_easyrpg_map_variables;
+	std::vector<rpg::ScopedSwitch>& easyrpg_self_switches = data_easyrpg_self_switches;
+	std::vector<rpg::ScopedVariable>& easyrpg_self_variables = data_easyrpg_self_variables;
+#else
+	std::vector<rpg::Switch>& easyrpg_frame_switches = data.easyrpg_frame_switches;
+	std::vector<rpg::Variable>& easyrpg_frame_variables = data.easyrpg_frame_variables;
+	std::vector<rpg::ScopedSwitch>& easyrpg_map_switches =  data.easyrpg_map_switches;
+	std::vector<rpg::ScopedVariable>& easyrpg_map_variables = data.easyrpg_map_variables;
+	std::vector<rpg::ScopedSwitch>& easyrpg_self_switches = data.easyrpg_self_switches;
+	std::vector<rpg::ScopedVariable>& easyrpg_self_variables = data.easyrpg_self_variables;
+#endif
 }
 
 void Data::Clear() {

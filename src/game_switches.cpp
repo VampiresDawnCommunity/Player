@@ -21,73 +21,12 @@
 #include <lcf/reader_util.h>
 #include <lcf/data.h>
 
-void Game_Switches::WarnGet(int variable_id) const {
-	Output::Debug("Invalid read sw[{}]!", variable_id);
-	--_warnings;
+Game_Switches::Game_Switches()
+	: Game_SwitchesBase() {
 }
 
-bool Game_Switches::Set(int switch_id, bool value) {
-	if (EP_UNLIKELY(ShouldWarn(switch_id, switch_id))) {
-		Output::Debug("Invalid write sw[{}] = {}!", switch_id, value);
-		--_warnings;
-	}
-	if (switch_id <= 0) {
-		return false;
-	}
-	auto& ss = _switches;
-	if (switch_id > static_cast<int>(ss.size())) {
-		ss.resize(switch_id);
-	}
-	ss[switch_id - 1] = value;
-	return value;
-}
-
-void Game_Switches::SetRange(int first_id, int last_id, bool value) {
-	if (EP_UNLIKELY(ShouldWarn(first_id, last_id))) {
-		Output::Debug("Invalid write sw[{},{}] = {}!", first_id, last_id, value);
-		--_warnings;
-	}
-	auto& ss = _switches;
-	if (last_id > static_cast<int>(ss.size())) {
-		ss.resize(last_id, false);
-	}
-	for (int i = std::max(0, first_id - 1); i < last_id; ++i) {
-		ss[i] = value;
-	}
-}
-
-bool Game_Switches::Flip(int switch_id) {
-	if (EP_UNLIKELY(ShouldWarn(switch_id, switch_id))) {
-		Output::Debug("Invalid flip sw[{}]!", switch_id);
-		--_warnings;
-	}
-	if (switch_id <= 0) {
-		return false;
-	}
-	auto& ss = _switches;
-	if (switch_id > static_cast<int>(ss.size())) {
-		ss.resize(switch_id);
-	}
-	ss[switch_id - 1].flip();
-	return ss[switch_id - 1];
-}
-
-void Game_Switches::FlipRange(int first_id, int last_id) {
-	if (EP_UNLIKELY(ShouldWarn(first_id, last_id))) {
-		Output::Debug("Invalid flip sw[{},{}]!", first_id, last_id);
-		--_warnings;
-	}
-	auto& ss = _switches;
-	if (last_id > static_cast<int>(ss.size())) {
-		ss.resize(last_id);
-	}
-	for (int i = std::max(0, first_id - 1); i < last_id; ++i) {
-		ss[i].flip();
-	}
-}
-
-std::string_view Game_Switches::GetName(int _id) const {
-	const auto* sw = lcf::ReaderUtil::GetElement(lcf::Data::switches, _id);
+std::string_view Game_Switches::GetName(int id) const {
+	const lcf::rpg::Switch* sw = lcf::ReaderUtil::GetElement(lcf::Data::switches, id);
 
 	if (!sw) {
 		// No warning, is valid because the switch array resizes dynamic during runtime
@@ -97,3 +36,43 @@ std::string_view Game_Switches::GetName(int _id) const {
 	}
 }
 
+game_bool Game_Switches::Flip(int id) {
+	if (EP_UNLIKELY(ShouldWarn(id, id))) {
+		Output::Debug("Invalid flip {}!", FormatLValue(id, 0));
+		--_warnings;
+	}
+
+	if (id <= 0) {
+		return false;
+	}
+	auto& storage = GetStorageForEdit();
+	storage.prepare(id, id);
+
+	if constexpr (std::is_same<game_bool, bool>::value) {
+		storage[id].flip();
+		return (bool)storage[id];
+	} else {
+		/*game_bool& b = storage[id];
+		b = (b > 0) ? 0 : 1;
+		return b;*/
+	}
+}
+
+void Game_Switches::FlipRange(int first_id, int last_id) {
+	if (EP_UNLIKELY(ShouldWarn(first_id, last_id))) {
+		Output::Debug("Invalid flip {}!", FormatLValue(first_id, last_id));
+		--_warnings;
+	}
+
+	auto& storage = GetStorageForEdit();
+	storage.prepare(first_id, last_id);
+
+	for (int i = std::max(1, first_id); i <= last_id; ++i) {
+		if constexpr (std::is_same<game_bool, bool>::value) {
+			storage[i].flip();
+		} else {
+			/*game_bool& b = storage[i];
+			b = (b > 0) ? 0 : 1;*/
+		}
+	}
+}

@@ -1,4 +1,5 @@
 #include "game_switches.h"
+#include <lcf/data.h>
 #include "doctest.h"
 
 TEST_SUITE_BEGIN("Switches");

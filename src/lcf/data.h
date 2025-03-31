@@ -7,6 +7,8 @@
  * file that was distributed with this source code.
  */
 
+#define SCOPEDVARS_LIBLCF_STUB 1
+
 #ifndef LCF_DATA_H
 #define LCF_DATA_H
 
@@ -33,9 +35,61 @@
 #include "lcf/rpg/eventcommand.h"
 #include "lcf/rpg/treemap.h"
 #include "lcf/rpg/database.h"
+#ifndef SCOPEDVARS_LIBLCF_STUB
+#include "lcf/rpg/scopedswitch.h"
+#include "lcf/rpg/scopedvariable.h"
+#endif
+
+#ifdef SCOPEDVARS_LIBLCF_STUB
 
 namespace lcf {
+	namespace rpg {
+		class ScopedSwitch {
+		public:
+			int ID = 0;
+			lcf::DBString name;
+			bool default_value = false;
+			bool default_value_defined = false;
+			bool is_readonly = false;
+			bool show_in_editor = false;
+			bool auto_reset = false;
+			bool map_group_inherited_value = false;
+		};
+		class ScopedVariable {
+		public:
+			int ID = 0;
+			lcf::DBString name;
+			int32_t default_value = false;
+			bool default_value_defined = false;
+			bool is_readonly = false;
+			bool show_in_editor = false;
+			bool auto_reset = false;
+			bool map_group_inherited_value = false;
+		};
+		class SaveScopedSwitchData {
+		public:
+			int32_t id = 1;
+			int32_t scope = 0;
+			bool on = false;
+			int32_t map_id = 0;
+			int32_t event_id = 0;
+			bool auto_reset = false;
+		};
+		class SaveScopedVariableData {
+		public:
+			int32_t id = 1;
+			int32_t scope = 0;
+			int32_t value = 0;
+			int32_t map_id = 0;
+			int32_t event_id = 0;
+			bool auto_reset = false;
+		};
+	}
+}
 
+#endif
+
+namespace lcf {
 /**
  * Data namespace
  */
@@ -61,6 +115,13 @@ namespace Data {
 	extern rpg::System& system;
 	extern std::vector<rpg::Switch>& switches;
 	extern std::vector<rpg::Variable>& variables;
+
+	extern std::vector<rpg::Switch>& easyrpg_frame_switches;
+	extern std::vector<rpg::Variable>& easyrpg_frame_variables;
+	extern std::vector<rpg::ScopedSwitch>& easyrpg_map_switches;
+	extern std::vector<rpg::ScopedVariable>& easyrpg_map_variables;
+	extern std::vector<rpg::ScopedSwitch>& easyrpg_self_switches;
+	extern std::vector<rpg::ScopedVariable>& easyrpg_self_variables;
 	extern std::vector<rpg::StringVariable>& maniac_string_variables;
 	/** @} */
 
