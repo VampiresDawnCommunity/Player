@@ -717,4 +717,12 @@ inline void Game_DataStorage<D, T, V, storage_mode>::AssignOp(V& target, V value
 	reinterpret_cast< const D&>(*this).AssignOpImpl(target, value);
 }
 
+inline void Game_SwitchesBase::AssignOpImpl(game_bool& target, game_bool value) const {
+	target = value;
+}
+
+inline void Game_VariablesBase::AssignOpImpl(Var_t& target, Var_t value) const {
+	target = Utils::Clamp(value, GetMinValue(), GetMaxValue());
+}
+
 #endif

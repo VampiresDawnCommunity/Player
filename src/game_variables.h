@@ -130,8 +130,6 @@ public:
 	int GetMaxDigits() const;
 
 protected:
-	void AssignOpImpl(Var_t& target, Var_t value) const;
-
 	void ValidateRangeOp(int first_id, int last_id, Var_t value, const char* op) const;
 	void ValidateRangeVarOp(int first_id, int last_id, int var_id, const char* op) const;
 	void ValidateRangeVarIndirectOp(int first_id, int last_id, int var_id, const char* op) const;
@@ -145,10 +143,6 @@ protected:
 	template <typename F>
 	void WriteArray(const int first_id_a, const int last_id_a, const int first_id_b, F&& op);
 };
-
-inline void Game_VariablesBase::AssignOpImpl(Var_t& target, Var_t value) const {
-	target = Utils::Clamp(value, GetMinValue(), GetMaxValue());
-}
 
 inline Game_Variables::Var_t Game_Variables::GetIndirect(int variable_id) const {
 	auto val_indirect = Get(variable_id);

@@ -42,14 +42,7 @@ public:
 	std::string_view GetName(int id) const override;
 
 	int GetInt(int switch_id) const;
-
-protected:
-	void AssignOpImpl(game_bool& target, game_bool value) const;
 };
-
-inline void Game_SwitchesBase::AssignOpImpl(game_bool& target, game_bool value) const {
-	target = value;
-}
 
 inline int Game_Switches::GetInt(int switch_id) const {
 	return Get(switch_id) ? 1 : 0;
