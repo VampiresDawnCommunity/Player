@@ -29,6 +29,119 @@ class Game_Character;
 class Game_BaseInterpreterContext;
 
 namespace Game_Interpreter_Shared {
+	enum ControlVarOperand : std::uint8_t {
+		// Constant
+		eVarOperand_Constant = 0,
+		// Var A ops B
+		eVarOperand_Variable,
+		// Number of var A ops B
+		eVarOperand_VariableIndirect,
+		// Random between range
+		eVarOperand_RandomBetweenRange,
+		// Items
+		eVarOperand_Items,
+		// Hero
+		eVarOperand_Actors,
+		// Characters
+		eVarOperand_Events,
+		// More
+		eVarOperand_Other,
+		// Battle related
+		eVarOperand_Battle_Enemies,
+		eVarOperand_Maniacs_Party = 9,
+		eVarOperand_Maniacs_Switch,
+		eVarOperand_Maniacs_Pow,
+		eVarOperand_Maniacs_Sqrt,
+		eVarOperand_Maniacs_Sin,
+		eVarOperand_Maniacs_Cos,
+		eVarOperand_Maniacs_Atan2,
+		eVarOperand_Maniacs_Min,
+		eVarOperand_Maniacs_Max,
+		eVarOperand_Maniacs_Abs,
+		eVarOperand_Maniacs_Binary,
+		eVarOperand_Maniacs_Ternary,
+		eVarOperand_Maniacs_Expression,
+
+		// Reserved / Maniacs 2024-xx-xx (not yet implemented - need to determine encoding/functionality + actual op ids)
+		eVarOperand_Maniacs_Clamp,
+		eVarOperand_Maniacs_MulDiv,
+		eVarOperand_Maniacs_DivMul,
+		eVarOperand_Maniacs_Between,
+		eVarOperand_Maniacs_Lerp,
+		eVarOperand_Maniacs_SumRange,
+		eVarOperand_Maniacs_AMin,
+		eVarOperand_Maniacs_AMax,
+		//
+
+		eVarOperand_EasyRpg_FrameSwitch = 200,
+		eVarOperand_EasyRpg_ScopedSwitch_Map,
+		eVarOperand_EasyRpg_ScopedSwitch_MapEvent,
+		eVarOperand_EasyRpg_FrameVariable,
+		eVarOperand_EasyRpg_ScopedVariable_Map,
+		eVarOperand_EasyRpg_ScopedVariable_MapEvent,
+		// Count Switches [id] matching condition (ON/OFF) or defined (arg>=2) (Scope: Map)
+		eVarOperand_EasyRpg_CountScopedSwitchesMatchingCondition_Map,
+		// Count Switches [id] matching condition (ON/OFF) or defined (arg>=2) for map [map_id] (Scope: MapEvent)
+		eVarOperand_EasyRpg_CountScopedSwitchesMatchingCondition_MapEvent,
+		// Count Variables [id] matching condition or defined (op>=6) (Scope: Map)
+		eVarOperand_EasyRpg_CountScopedVarsMatchingCondition_Map,
+		// Count Variables [id] matching condition or defined (op>=6) for map [map_id]  (Scope: MapEvent)
+		eVarOperand_EasyRpg_CountScopedVarsMatchingCondition_MapEvent,
+
+		// Reserved / Not yet implemented
+		eVarOperand_EasyRpg_DateTime,		// jetrotals new dt operations
+		eVarOperand_EasyRpg_MapInfo,		// jetrotals planned ops for Map/Screen ?
+		eVarOperand_EasyRpg_MessageState,	// get info about active message windows
+		eVarOperand_EasyRpg_RngFixedSeed,	// reproducible rng (+ options for rng dependent on map/event ?)
+		//
+
+		eVarOperand_Vanilla_FIRST = eVarOperand_Constant,
+		eVarOperand_Vanilla_LAST = eVarOperand_Battle_Enemies,
+		eVarOperand_Maniacs_FIRST = eVarOperand_Maniacs_Party,
+		eVarOperand_Maniacs_LAST = eVarOperand_Maniacs_Expression,
+		eVarOperand_Maniacs24xxxx_FIRST = eVarOperand_Maniacs_Clamp,
+		eVarOperand_Maniacs24xxxx_LAST = eVarOperand_Maniacs_AMax,
+		eVarOperand_EasyRpg_FIRST = eVarOperand_EasyRpg_FrameSwitch,
+		eVarOperand_EasyRpg_LAST = eVarOperand_EasyRpg_RngFixedSeed,
+
+		eVarOperand_MAX = eVarOperand_EasyRpg_LAST
+	};
+
+	enum ConditionalBranch : std::uint8_t {
+		eCondition_Switch = 0,
+		eCondition_Variable,
+		eCondition_Timer,
+		eCondition_Gold,
+		eCondition_Item,
+		eCondition_Hero,
+		eCondition_CharOrientation,
+		eCondition_VehicleInUse,
+		eCondition_TriggeredByDecisionKey,
+		eCondition_BgmLoopedOnce,
+		eCondition_2k3_Timer2,
+		eCondition_2k3_Other,
+		eCondition_Maniacs_Other = 12,
+		eCondition_Maniacs_SwitchIndirect,
+		eCondition_Maniacs_VariableIndirect,
+		eCondition_Maniacs_StringComparison,
+		eCondition_Maniacs_Expression,
+
+		eCondition_EasyRpg_FrameSwitch = 200,
+		eCondition_EasyRpg_ScopedSwitch_Map,
+		eCondition_EasyRpg_ScopedSwitch_MapEvent,
+		eCondition_EasyRpg_FrameVariable,
+		eCondition_EasyRpg_ScopedVariable_Map,
+		eCondition_EasyRpg_ScopedVariable_MapEvent,
+
+		eCondition_Vanilla_FIRST = eCondition_Switch,
+		eCondition_Vanilla_LAST = eCondition_2k3_Other,
+		eCondition_Maniacs_FIRST = eCondition_Maniacs_Other,
+		eCondition_Maniacs_LAST = eCondition_Maniacs_Expression,
+		eCondition_EasyRpg_FIRST = eCondition_EasyRpg_FrameSwitch,
+		eCondition_EasyRpg_LAST = eCondition_EasyRpg_ScopedVariable_MapEvent,
+
+		eCondition_MAX = eCondition_EasyRpg_LAST
+	};
 
 	/*
 	* Indicates how the target of an interpreter operation (lvalue) should be evaluated.

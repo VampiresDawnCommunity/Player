@@ -38,6 +38,14 @@ class Game_Event;
 class Game_CommonEvent;
 class PendingMessage;
 
+namespace DispatchTable_VarOp {
+	class dispatch_table_varoperand;
+}
+
+namespace DispatchTable_CondBranch {
+	class dispatch_table_condition;
+}
+
 /**
  * Game_Interpreter class
  */
@@ -80,6 +88,7 @@ public:
 	bool ExecuteCommand();
 	virtual bool ExecuteCommand(lcf::rpg::EventCommand const& com);
 
+	static void RebuildStaticDispatchTables();
 
 	/**
 	 * Returns the interpreters current state information.
@@ -297,6 +306,9 @@ protected:
 	bool CommandManiacSetGameOption(lcf::rpg::EventCommand const& com);
 	bool CommandManiacControlStrings(lcf::rpg::EventCommand const& com);
 	bool CommandManiacCallCommand(lcf::rpg::EventCommand const& com);
+	bool CommandEasyRpgConditionalBranchEx(lcf::rpg::EventCommand const& com);
+	bool CommandEasyRpgControlSwitchesEx(lcf::rpg::EventCommand const& com);
+	bool CommandEasyRpgControlVariablesEx(lcf::rpg::EventCommand const& com);
 	bool CommandEasyRpgSetInterpreterFlag(lcf::rpg::EventCommand const& com);
 	bool CommandEasyRpgProcessJson(lcf::rpg::EventCommand const& com);
 	bool CommandEasyRpgCloneMapEvent(lcf::rpg::EventCommand const& com);
@@ -309,6 +321,8 @@ protected:
 
 	void ForegroundTextPush(PendingMessage pm);
 	void EndEventProcessing();
+
+	void PerformVarOp(int value, int start, int end, lcf::rpg::EventCommand const& com);
 
 	FileRequestBinding request_id;
 	enum class Keys {
@@ -348,8 +362,104 @@ protected:
 	KeyInputState _keyinput;
 	AsyncOp _async_op = {};
 
+	const DispatchTable_VarOp::dispatch_table_varoperand* dispatch_controlvars;
+	const DispatchTable_CondBranch::dispatch_table_condition* dispatch_conditionalbranch;
+
 	friend class Scene_Debug;
 };
+
+namespace DispatchTable_VarOp {
+	enum CommandType {
+		eControlVarOp_Default = 0,
+		eControlVarOp_Ex,
+		eControlVarOp_Scoped,
+		eControlVarOp_LAST
+	};
+
+	using namespace Game_Interpreter_Shared;
+	using varOperand_Func = int (*)(lcf::rpg::EventCommand const&, Game_BaseInterpreterContext const&);
+
+	//dispatch table
+	class dispatch_table_varoperand {
+	public:
+		inline dispatch_table_varoperand(const int param_operand, const int patch_flags, const std::map<ControlVarOperand, varOperand_Func> defined_ops, varOperand_Func default_case) : param_operand(param_operand), patch_flags(patch_flags), ops(InitOps(defined_ops, default_case)) { }
+
+		bool Execute(int& value_out, lcf::rpg::EventCommand const& com, Game_BaseInterpreterContext const& interpreter) const;
+
+		inline int GetPatchFlags() const { return patch_flags; }
+	private:
+		static constexpr int table_size = { (int)std::numeric_limits<unsigned char>::max() };
+
+		static inline std::array<varOperand_Func, table_size> InitOps(const std::map<ControlVarOperand, varOperand_Func> defined_ops, varOperand_Func default_case) {
+			std::array<varOperand_Func, table_size> ret;
+
+			for (int i = 0; i < table_size; i++) {
+				auto it = defined_ops.find(static_cast<ControlVarOperand>(std::byte(i)));
+				if (it == defined_ops.end()) {
+					ret[i] = default_case;
+				} else {
+					ret[i] = it->second;
+				}
+			}
+
+			return ret;
+		}
+
+		const int param_operand, patch_flags;
+		const std::array<varOperand_Func, table_size> ops;
+	};
+
+	template <CommandType op_type>
+	const dispatch_table_varoperand& BuildDispatchTable(const bool includeManiacs_200128, const bool includeManiacs24xxxx, const bool includeEasyRpgEx);
+
+	void RebuildDispatchTables(const bool includeManiacs_200128, const bool includeManiacs24xxxx, const bool includeEasyRpgEx);
+}
+
+namespace DispatchTable_CondBranch {
+	enum CommandType {
+		eCondBranch_Default = 0,
+		eCondBranch_Ex,
+		eCondBranch_LAST
+	};
+
+	using namespace Game_Interpreter_Shared;
+	using condition_Func = bool (*)(lcf::rpg::EventCommand const&, Game_BaseInterpreterContext const&);
+
+
+	class dispatch_table_condition {
+	public:
+		inline dispatch_table_condition(const int patch_flags, const std::map<ConditionalBranch, condition_Func> defined_ops, condition_Func default_case) : patch_flags(patch_flags), ops(InitOps(defined_ops, default_case)) {}
+
+		bool Execute(lcf::rpg::EventCommand const& com, Game_BaseInterpreterContext const& interpreter) const;
+
+		inline int GetPatchFlags() const { return patch_flags; }
+	private:
+		static constexpr int table_size = { (int)std::numeric_limits<unsigned char>::max() };
+
+		static inline std::array<condition_Func, table_size> InitOps(const std::map<ConditionalBranch, condition_Func> defined_ops, condition_Func default_case) {
+			std::array<condition_Func, table_size> ret;
+
+			for (int i = 0; i < table_size; i++) {
+				auto it = defined_ops.find(static_cast<ConditionalBranch>(std::byte(i)));
+				if (it == defined_ops.end()) {
+					ret[i] = default_case;
+				} else {
+					ret[i] = it->second;
+				}
+			}
+
+			return ret;
+		}
+
+		const int patch_flags;
+		const std::array<condition_Func, table_size> ops;
+	};
+
+	template <CommandType op_type>
+	dispatch_table_condition& BuildDispatchTable(const bool include2k3Commands, const bool includeManiacs_200128, const bool includeManiacs24xxxx, const bool includeEasyRpgEx);
+
+	void RebuildDispatchTables(const bool include2k3Commands, const bool includeManiacs_200128, const bool includeManiacs24xxxx, const bool includeEasyRpgEx);
+}
 
 inline const lcf::rpg::SaveEventExecFrame* Game_Interpreter::GetFramePtr() const {
 	return !_state.stack.empty() ? &_state.stack.back() : nullptr;

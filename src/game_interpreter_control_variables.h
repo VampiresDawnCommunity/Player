@@ -26,10 +26,14 @@ class Game_BaseInterpreterContext;
 namespace ControlVariables {
 	int Random(int value, int value2);
 	int Item(int op, int item);
+	template <bool ManiacPatch>
 	int Actor(int op, int actor_id);
 	int Party(int op, int party_idx);
+	template <bool ManiacPatch>
 	int Event(int op, int event_id, const Game_BaseInterpreterContext& interpreter);
+	template <bool ManiacPatch>
 	int Other(int op);
+	template <bool ManiacPatch>
 	int Enemy(int op, int enemy_idx);
 	int Pow(int arg1, int arg2);
 	int Sqrt(int arg, int mul);
